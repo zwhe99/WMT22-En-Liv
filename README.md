@@ -2,7 +2,9 @@
 
 This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submission for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/).
 
+<p align="center">
 <img src="imgs/training-process.png" alt="training-process"  width="500" />
+</p>
 
 ## Overview
 
