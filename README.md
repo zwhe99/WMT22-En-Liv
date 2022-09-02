@@ -56,8 +56,6 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 ## Cross-model word embedding alignment (CMEA)
 
-**Obtain the overlapping vocabulary**
-
 ```shell
 set -u 
 
