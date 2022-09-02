@@ -1,0 +1,3 @@
+[submodule "tools/corpus-tools"]
+	path = tools/corpus-tools
+	url = https://github.com/zwhe99/corpus-tools
