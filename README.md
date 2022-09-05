@@ -91,7 +91,7 @@ data
     ├── clean.auth.liv-lv.liv
     ├── clean.auth.liv-lv.lv
     ├── clean.syn.en-liv.en
-		├── clean.syn.en-liv.liv
+    ├── clean.syn.en-liv.liv
     └── process-para-data.sh
 ```
 
