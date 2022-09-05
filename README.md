@@ -15,6 +15,8 @@ This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL
 * **Combine data and retrain**: combine all the authentic and synthetic bi-text and retrain the model.
 * **Fine-tune & post-process**: fine-tune the model on En⇔Liv using the validation set and perform online back-translation using mono-lingual data. Finally, apply rule-based post-processing to the model output.
 
+
+
 ## Preparation
 
 #### Download pre-trained models
@@ -36,17 +38,13 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 #### Dependencies
 
-* Python==3.8.12
+* python==3.8.12
 
-* Pytorch==1.10.0
+* pytorch==1.10.0
 
-* Sentencepiece
+* sentencepiece==0.1.96
 
-  ```shell
-  pip3 install sentencepiece
-  ```
-
-* Fairseq
+* fairseq
 
   ```shell
   pip3 install -e ./fairseq
@@ -54,11 +52,72 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 
 
-## Cross-model word embedding alignment (CMEA)
+## Data
+
+#### Download
+
+We provide filtered data for download, both authentic and synthetic (En-Liv only):
+
+* [Parallel data](https://drive.google.com/drive/folders/1EPS8vcrLTgUDkUT59ddvUFPCoyTj8cXB?usp=sharing)
+* [Monolingual data](https://drive.google.com/drive/folders/14ReDmby6y-LUgf2hkh2C8WW_wf-OK-Gm?usp=sharing)
+
+Download the files to the `data/mono` or `data/para` directory, and the structure should be:
+
+```
+data
+├── data-bin
+├── eval
+│   ├── benchmark-test.en
+│   ├── benchmark-test.et
+│   ├── benchmark-test.liv
+│   ├── benchmark-test.lv
+│   ├── process-eval-data.sh
+│   └── wmttest2022.en-de.en
+├── mono
+│   ├── clean.en
+│   ├── clean.liv
+│   └── process-mono-data.sh
+└── para
+    ├── clean.auth.en-et.en
+    ├── clean.auth.en-et.et
+    ├── clean.auth.en-liv.en
+    ├── clean.auth.en-liv.liv
+    ├── clean.auth.en-lv.en
+    ├── clean.auth.en-lv.lv
+    ├── clean.auth.et-liv.et
+    ├── clean.auth.et-liv.liv
+    ├── clean.auth.et-lv.et
+    ├── clean.auth.et-lv.lv
+    ├── clean.auth.liv-lv.liv
+    ├── clean.auth.liv-lv.lv
+    ├── clean.syn.en-liv.en
+		├── clean.syn.en-liv.liv
+    └── process-para-data.sh
+```
+
+
+
+#### Processing
+
+Encode raw text into sentence pieces and binarize (this may take a long time):
 
 ```shell
-set -u 
+# apply spm and binarize
+sh data/eval/process-eval-data.sh
+sh data/para/process-para-data.sh
+sh data/mono/process-mono-data.sh
 
+# create data-bins
+sh data/data/mono/create-data-bin.sh
+```
+
+
+
+## Cross-model word embedding alignment (CMEA)
+
+***Note:** You can use `--help` to see the full uage of each script.*
+
+```shell
 SRC_MODEL_NAME=liv4ever_mt
 TGT_MODEL_NAME=m2m100_1_2B
 CEMA_DIR=PTModels/M2M100-CMEA
