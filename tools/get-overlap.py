@@ -2,7 +2,7 @@ import argparse
 import sys
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Output the overlap of the two dictionaries and print the statistics.")
     parser.add_argument("--d1", type=str, help="dictionary one")
     parser.add_argument("--d2", type=str, help="dictionary two")
     return parser.parse_args()
@@ -23,7 +23,7 @@ def main(args):
     print(f"|d1 - d2|={len(set1 - set2)}", file=sys.stderr)
     print(f"|d2 - d1|={len(set2 - set1)}", file=sys.stderr)
     print(f"|d2 ∪ d1|={len(set2 | set1)}", file=sys.stderr)
-    print(f"|d1 ∩ d2| / |d2 ∪ d1|={len(set1 & set2)/len(set2 | set1)}", file=sys.stderr)
+    print(f"|d1 ∩ d2| / |d1|={len(set1 & set2)/len(set1)}", file=sys.stderr)
     for w in set1 & set2:
         print(f"{w} {w}")
 

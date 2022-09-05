@@ -64,7 +64,7 @@ class Dictionary(object):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Extract the word embeddings from a model.")
     parser.add_argument('--model', type=str, help="model path")
     parser.add_argument('--dict', type=str, help="dictionary path")
     parser.add_argument('--name', type=str, help="emb name")
