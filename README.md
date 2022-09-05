@@ -111,6 +111,8 @@ sh data/mono/process-mono-data.sh
 sh data/data/mono/create-data-bin.sh
 ```
 
+The binary files will be stored in `data/data-bin/auth` (authentic) and `data/data-bin/auth-syn` (authentic+synthetic). 
+
 
 
 ## Cross-model word embedding alignment (CMEA)
