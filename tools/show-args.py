@@ -2,7 +2,7 @@ import torch
 import json
 import argparse
 
-parser= argparse.ArgumentParser();
+parser= argparse.ArgumentParser(description="Print the args from a checkpoint file.")
 parser.add_argument("--model",help="Model path")
 
 if __name__ == '__main__':
