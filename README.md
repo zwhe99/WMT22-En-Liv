@@ -111,6 +111,8 @@ sh data/mono/process-mono-data.sh
 sh data/data/mono/create-data-bin.sh
 ```
 
+The binary files will be stored in `data/data-bin/auth` (authentic) and `data/data-bin/auth-syn` (authentic+synthetic). 
+
 
 
 ## Cross-model word embedding alignment (CMEA)
@@ -169,7 +171,7 @@ echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
 echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
 echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
 
-# Modify the original embedding
+# Replace the original embedding with the new one
 python3 tools/CMEA/change-emb.py \
     --model PTModels/M2M100/1.2B_last_checkpoint.pt \
     --emb1 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$SRC_MODEL_NAME.pth \
