@@ -1,6 +1,6 @@
 # WMT22-En-Liv
 
-This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/).
+This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). More details are available in our system description paper.
 
 
 ## Overview
@@ -128,9 +128,9 @@ mkdir -p $CEMA_DIR
 
 # Obtain the overlapping vocabulary
 python3 tools/get-overlap.py \
-	--d1 PTModels/Liv4ever-MT/dict.src.txt \
-	--d2 PTModels/M2M100/model_dict.128k.txt \
-	> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
+		--d1 PTModels/Liv4ever-MT/dict.src.txt \
+		--d2 PTModels/M2M100/model_dict.128k.txt \
+		> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
 
 # Extract word embeddings from models
 python3 tools/extract-word-emb.py \
@@ -181,3 +181,233 @@ python3 tools/CMEA/change-emb.py \
     --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
 ```
 
+
+
+## Model training
+
+**4-lingual M2M training**
+
+* GPUs: 4 nodes x 8 A100-SXM4-40GB/node
+
+* Trained model (coming soon)
+
+* Training script:
+
+  ```shell
+  $EXP_NAME=ptm.mm100-1.2b-cmea+task.mt+lang.enlvetli+temp.5+data.auth
+  mkdir -p $EXP_NAME
+  
+  python3 -m torch.distributed.launch --nproc_per_node=8 \
+     --nnodes=4 --node_rank=0 --master_addr="xxx.xxx.xxx.xxx" \
+     --master_port=xxxxx \
+     $(which fairseq-train) data/data-bin/auth \
+     --finetune-from-model PTModels/M2M100-CMEA/1.2B_last_checkpoint_cmea_emb.pt \
+     --num-workers 0 \
+     --encoder-normalize-before  \
+     --decoder-normalize-before  \
+     --arch transformer_wmt_en_de_big \
+     --task multilingual_semisupervised_translation \
+     --train-tasks mt \
+     --share-all-embeddings  \
+     --share-decoder-input-output-embed  \
+     --encoder-layerdrop 0.05 \
+     --decoder-layerdrop 0.05 \
+     --activation-dropout 0.0 \
+     --encoder-layers 24 \
+     --decoder-layers 24 \
+     --encoder-ffn-embed-dim 8192 \
+     --decoder-ffn-embed-dim 8192 \
+     --encoder-embed-dim 1024 \
+     --decoder-embed-dim 1024 \
+     --sampling-method temperature \
+     --sampling-temperature 5 \
+     --encoder-langtok src \
+     --decoder-langtok  \
+     --langs en,liv,et,lv \
+     --lang-pairs en-liv,liv-en,en-et,et-en,en-lv,lv-en,liv-et,et-liv,liv-lv,lv-liv,et-lv,lv-et \
+     --criterion label_smoothed_cross_entropy \
+     --label-smoothing 0.2 \
+     --optimizer adam \
+     --adam-eps 1e-08 \
+     --adam-betas 0.9,0.98 \
+     --lr-scheduler inverse_sqrt \
+     --lr 0.0005 \
+     --warmup-init-lr 1e-07 \
+     --warmup-updates 2000 \
+     --max-update 10000 \
+     --dropout 0.3 \
+     --attention-dropout 0.1 \
+     --weight-decay 0.0 \
+     --max-tokens 1024 \
+     --max-tokens-valid 1024 \
+     --update-freq 2 \
+     --virtual-epoch-size 10000000 \
+     --skip-remainder-batch  \
+     --no-progress-bar  \
+     --log-format simple \
+     --log-interval 2 \
+     --best-checkpoint-metric loss \
+     --patience 5 \
+     --skip-invalid-size-inputs-valid-test  \
+     --no-epoch-checkpoints  \
+     --eval-lang-pairs et-liv,liv-et,lv-liv,liv-lv \
+     --valid-subset valid \
+     --validate-interval-updates 500 \
+     --save-interval-updates 500 \
+     --keep-interval-updates 5 \
+     --fp16  \
+     --seed 42 \
+     --ddp-backend no_c10d \
+     --save-dir $EXP_NAME/ckpts \
+     --distributed-no-spawn  \
+     --tensorboard-logdir $EXP_NAME/tensorboard
+  ```
+
+  
+
+**Combine data and retrain**
+
+* GPUs: 4 nodes x 8 A100-SXM4-40GB/node
+
+* Trained model (coming soon)
+
+* Training script:
+
+  ```shell
+  $EXP_NAME=ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn
+  mkdir -p $EXP_NAME
+  
+  python3 -m torch.distributed.launch --nproc_per_node=8 \
+     --nnodes=4 --node_rank=0 --master_addr="xxx.xxx.xxx.xxx" \
+     --master_port=xxxxx \
+     $(which fairseq-train) data/data-bin/auth-syn \
+     --finetune-from-model PTModels/M2M100-CMEA/1.2B_last_checkpoint_cmea_emb.pt \
+     --num-workers 0 \
+     --encoder-normalize-before  \
+     --decoder-normalize-before  \
+     --arch transformer_wmt_en_de_big \
+     --task multilingual_semisupervised_translation \
+     --train-tasks mt \
+     --share-all-embeddings  \
+     --share-decoder-input-output-embed  \
+     --encoder-layerdrop 0.05 \
+     --decoder-layerdrop 0.05 \
+     --activation-dropout 0.0 \
+     --encoder-layers 24 \
+     --decoder-layers 24 \
+     --encoder-ffn-embed-dim 8192 \
+     --decoder-ffn-embed-dim 8192 \
+     --encoder-embed-dim 1024 \
+     --decoder-embed-dim 1024 \
+     --encoder-langtok src \
+     --decoder-langtok  \
+     --langs en,liv,et,lv \
+     --lang-pairs en-liv,liv-en,en-et,et-en,en-lv,lv-en,liv-et,et-liv,liv-lv,lv-liv,et-lv,lv-et \
+     --criterion label_smoothed_cross_entropy \
+     --label-smoothing 0.2 \
+     --optimizer adam \
+     --adam-eps 1e-08 \
+     --adam-betas 0.9,0.98 \
+     --lr-scheduler inverse_sqrt \
+     --lr 0.0005 \
+     --warmup-init-lr 1e-07 \
+     --warmup-updates 2000 \
+     --max-update 10000 \
+     --dropout 0.3 \
+     --attention-dropout 0.1 \
+     --weight-decay 0.0 \
+     --max-tokens 1024 \
+     --max-tokens-valid 1024 \
+     --update-freq 2 \
+     --virtual-epoch-size 10000000 \
+     --skip-remainder-batch  \
+     --no-progress-bar  \
+     --log-format simple \
+     --log-interval 2 \
+     --best-checkpoint-metric loss \
+     --patience 10 \
+     --skip-invalid-size-inputs-valid-test  \
+     --no-epoch-checkpoints  \
+     --eval-lang-pairs en-liv,liv-en \
+     --valid-subset valid \
+     --validate-interval-updates 500 \
+     --save-interval-updates 500 \
+     --keep-interval-updates 5 \
+     --fp16  \
+     --seed 42 \
+     --ddp-backend no_c10d \
+     --save-dir $EXP_NAME/ckpts \
+     --distributed-no-spawn  \
+     --tensorboard-logdir $EXP_NAME/tensorboard
+  ```
+
+  
+
+**Fintuning**
+
+* GPUs: 1 nodes x 1 A100-SXM4-40GB/node
+
+* Trained model (coming soon)
+
+* Training script:
+
+  ```shell
+  $EXP_NAME=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono
+  mkdir -p $EXP_NAME
+  
+  fairseq-train data/data-bin/auth-syn \
+     --finetune-from-model ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn/ckpts/checkpoint_best.pt \
+     --num-workers 0 \
+     --encoder-normalize-before  \
+     --decoder-normalize-before  \
+     --arch transformer_wmt_en_de_big \
+     --task multilingual_semisupervised_translation \
+     --train-tasks mt,bt \
+     --share-all-embeddings  \
+     --share-decoder-input-output-embed  \
+     --encoder-layerdrop 0.05 \
+     --decoder-layerdrop 0.05 \
+     --activation-dropout 0.0 \
+     --encoder-layers 24 \
+     --decoder-layers 24 \
+     --encoder-ffn-embed-dim 8192 \
+     --decoder-ffn-embed-dim 8192 \
+     --encoder-embed-dim 1024 \
+     --decoder-embed-dim 1024 \
+     --sampling-method uniform \
+     --encoder-langtok src \
+     --decoder-langtok  \
+     --langs en,liv,et,lv,ensyn,livsyn,ensynet,livsynet,ensynlv,livsynlv \
+     --lang-pairs liv-en,en-liv \
+     --criterion label_smoothed_cross_entropy \
+     --label-smoothing 0.2 \
+     --optimizer adam \
+     --adam-eps 1e-08 \
+     --adam-betas 0.9,0.98 \
+     --lr-scheduler inverse_sqrt \
+     --lr 0.0001 \
+     --warmup-init-lr 1e-07 \
+     --warmup-updates 2000 \
+     --max-update 500 \
+     --dropout 0.3 \
+     --attention-dropout 0.1 \
+     --weight-decay 0.0 \
+     --max-tokens 1024 \
+     --max-tokens-valid 1024 \
+     --update-freq 2 \
+     --virtual-epoch-size 10000000 \
+     --no-progress-bar  \
+     --log-format simple \
+     --log-interval 2 \
+     --no-epoch-checkpoints  \
+     --train-subset test \
+     --save-interval-updates 50 \
+     --keep-interval-updates 2 \
+     --disable-validation  \
+     --fp16  \
+     --seed 42 \
+     --ddp-backend no_c10d \
+     --save-dir $EXP_NAME/ckpts \
+     --distributed-no-spawn  \
+     --tensorboard-logdir $EXP_NAME/tensorboard
+  ```
