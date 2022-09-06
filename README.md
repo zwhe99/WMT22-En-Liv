@@ -432,7 +432,7 @@ TGT=liv
 
 # generate
 fairseq-generate data/data-bin/auth \
-    --batch-size 32 \
+    --batch-size 128 \
     --path $MODEL_PATH \
     --fixed-dictionary $DICT_PATH \
     -s $SRC  -t $TGT \
@@ -448,7 +448,7 @@ cat wmttest2022.$SRC-$TGT.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest202
 
 # generate (no-repeat)
 fairseq-generate data/data-bin/auth \
-    --batch-size 32 \
+    --batch-size 128 \
     --path $MODEL_PATH \
     --fixed-dictionary $DICT_PATH \
     -s $SRC  -t $TGT \
@@ -482,4 +482,56 @@ python3 tools/post-process.py \
 
 ```shell
 cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SRC-$TGT.ref.A.$TGT
+```
+
+
+
+### Round-trip BLEU
+
+**Generate translations**
+
+```shell
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
+LNG_PAIRS=liv-en,en-liv
+LNGS=en,liv,et,lv
+
+EVAL_DIR=data/eval
+SOURCE_FILE=$EVAL_DIR/wmttest2022.en-de.en
+
+# generate
+cat $SOURCE_FILE | fairseq-interactive $EVAL_DIR \
+    --batch-size 128 \
+    --buffer-size 1024 \
+    --path $MODEL_PATH \
+    --fixed-dictionary $DICT_PATH \
+    -s en  -t liv \
+    --beam 5 \
+    --task multilingual_semisupervised_translation \
+    --lang-pairs $LNG_PAIRS \
+    --langs  $LNG \
+    --decoder-langtok \
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv
+    
+cat round-trp.en-liv | fairseq-interactive $EVAL_DIR \
+    --batch-size 128 \
+    --buffer-size 1024 \
+    --path $MODEL_PATH \
+    --fixed-dictionary $DICT_PATH \
+    -s liv  -t en \
+    --beam 5 \
+    --task multilingual_semisupervised_translation \
+    --lang-pairs $LNG_PAIRS \
+    --langs  $LNG \
+    --decoder-langtok \
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv-en
+
+```
+
+
+
+**Evaluate**
+
+```shell
+cat round-trp.en-liv-en | sacrebleu $SOURCE_FILE
 ```
