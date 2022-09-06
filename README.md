@@ -361,6 +361,7 @@ python3 tools/CMEA/change-emb.py \
   mkdir -p $EXP_NAME
   
   fairseq-train data/data-bin/auth-syn \
+     --train-subset finetune \
      --finetune-from-model ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn/ckpts/checkpoint_best.pt \
      --num-workers 0 \
      --encoder-normalize-before  \
