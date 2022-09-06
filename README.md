@@ -14,7 +14,7 @@ This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL
 * **4-lingual M2M training**: many-to-many translation training for all language pairs in {En, Liv, Et, Lv}, using only parallel data.
 * **Synthetic data generation**: generate synthetic bi-text for En-Liv, using Et and Lv as pivot languages.
 * **Combine data and retrain**: combine all the authentic and synthetic bi-text and retrain the model.
-* **Fine-tune & post-process**: fine-tune the model on En⇔Liv using the validation set and perform online back-translation using mono-lingual data. Finally, apply rule-based post-processing to the model output.
+* **Fine-tune & post-process**: fine-tune the model on En⇔Liv using the validation set and perform online back-translation using monolingual data. Finally, apply rule-based post-processing to the model output.
 
 
 
@@ -361,6 +361,7 @@ python3 tools/CMEA/change-emb.py \
   mkdir -p $EXP_NAME
   
   fairseq-train data/data-bin/auth-syn \
+     --train-subset finetune \
      --finetune-from-model ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn/ckpts/checkpoint_best.pt \
      --num-workers 0 \
      --encoder-normalize-before  \
