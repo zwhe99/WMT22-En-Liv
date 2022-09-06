@@ -9,6 +9,7 @@ This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL
 <img src="imgs/training-process.png" alt="training-process"  width="500" />
 </p>
 
+
 * **Cross-model word embedding alignment**: transfer the word embeddings of Liv4ever-MT to M2M100, enabling it to support Livonian.
 * **4-lingual M2M training**: many-to-many translation training for all language pairs in {En, Liv, Et, Lv}, using only parallel data.
 * **Synthetic data generation**: generate synthetic bi-text for En-Liv, using Et and Lv as pivot languages.
@@ -411,3 +412,74 @@ python3 tools/CMEA/change-emb.py \
      --distributed-no-spawn  \
      --tensorboard-logdir $EXP_NAME/tensorboard
   ```
+
+
+
+## Evaluation
+
+#### Test set
+
+**Generate translations**
+
+```shell
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
+LNG_PAIRS=liv-en,en-liv
+LNGS=en,liv,et,lv
+
+SRC=en
+TGT=liv
+
+# generate
+fairseq-generate data/data-bin/auth \
+    --batch-size 32 \
+    --path $MODEL_PATH \
+    --fixed-dictionary $DICT_PATH \
+    -s $SRC  -t $TGT \
+    --remove-bpe 'sentencepiece' \
+    --beam 5 \
+    --task multilingual_semisupervised_translation \
+    --lang-pairs $LNG_PAIRS \
+    --langs  $LNGS \
+    --decoder-langtok \
+    --encoder-langtok src \
+    --gen-subset test > wmttest2022.$SRC-$TGT.gen
+cat wmttest2022.$SRC-$TGT.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.hyp
+
+# generate (no-repeat)
+fairseq-generate data/data-bin/auth \
+    --batch-size 32 \
+    --path $MODEL_PATH \
+    --fixed-dictionary $DICT_PATH \
+    -s $SRC  -t $TGT \
+    --remove-bpe 'sentencepiece' \
+    --beam 5 \
+    --no-repeat-ngram-size	2 \
+    --task multilingual_semisupervised_translation \
+    --lang-pairs $LNG_PAIRS \
+    --langs  $LNGS \
+    --decoder-langtok \
+    --encoder-langtok src \
+    --gen-subset test > wmttest2022.$SRC-$TGT.no-repeat.gen
+cat wmttest2022.$SRC-$TGT.no-repeat.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.no-repeat.hyp
+```
+
+
+
+**Post-processing**
+
+```shell
+python3 tools/post-process.py \
+    --src-file data/eval/wmttest2022.$SRC-$TGT.$SRC \
+    --hyp-file wmttest2022.$SRC-$TGT.hyp \
+    --no-repeat-hyp-file wmttest2022.$SRC-$TGT.no-repeat.hyp \
+    --lang $TGT > wmttest2022.$SRC-$TGT.pa.hyp
+```
+
+
+
+**Evaluate**
+
+```shell
+cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SRC-$TGT.ref.A.$TGT
+```
