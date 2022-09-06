@@ -45,6 +45,10 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 * sentencepiece==0.1.96
 
+* nltk==3.7
+
+* sacrebleu=2.0.0
+
 * fairseq
 
   ```shell
