@@ -406,7 +406,6 @@ python3 tools/CMEA/change-emb.py \
      --log-format simple \
      --log-interval 2 \
      --no-epoch-checkpoints  \
-     --train-subset test \
      --save-interval-updates 50 \
      --keep-interval-updates 2 \
      --disable-validation  \
