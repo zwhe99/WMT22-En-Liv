@@ -383,7 +383,7 @@ python3 tools/CMEA/change-emb.py \
      --sampling-method uniform \
      --encoder-langtok src \
      --decoder-langtok  \
-     --langs en,liv,et,lv,ensyn,livsyn,ensynet,livsynet,ensynlv,livsynlv \
+     --langs en,liv,et,lv \
      --lang-pairs liv-en,en-liv \
      --criterion label_smoothed_cross_entropy \
      --label-smoothing 0.2 \
