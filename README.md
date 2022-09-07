@@ -105,10 +105,10 @@ python3 tools/CMEA/supervised-inconsistent-dimensions.py \
 
 # Get the final dictionary (Liv4ever-MT's dict + Lang tokens + madeupwords)
 cat PTModels/Liv4ever-MT/dict.trg.txt > $CEMA_DIR/merge_dict.txt
+
 echo "__liv__ 1" >> $CEMA_DIR/merge_dict.txt
-echo "__en__ 1"  >> $CEMA_DIR/merge_dict.txt
-echo "__et__ 1"  >> $CEMA_DIR/merge_dict.txt
-echo "__lv__ 1"  >> $CEMA_DIR/merge_dict.txt
+sed -n '128001,128100p' PTModels/M2M100/model_dict.128k.txt >> $CEMA_DIR/merge_dict.txt
+
 echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
 echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
 echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
