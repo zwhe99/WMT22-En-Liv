@@ -502,9 +502,10 @@ LNGS=en,liv,et,lv
 
 EVAL_DIR=data/eval
 SOURCE_FILE=$EVAL_DIR/wmttest2022.en-de.en
+SOURCE_SPM_FILE=$EVAL_DIR/wmttest2022.spm.en-de.en
 
 # generate
-cat $SOURCE_FILE | fairseq-interactive $EVAL_DIR \
+cat $SOURCE_SPM_FILE | fairseq-interactive $EVAL_DIR \
     --batch-size 128 \
     --buffer-size 1024 \
     --path $MODEL_PATH \
@@ -513,22 +514,23 @@ cat $SOURCE_FILE | fairseq-interactive $EVAL_DIR \
     --beam 5 \
     --task multilingual_semisupervised_translation \
     --lang-pairs $LNG_PAIRS \
-    --langs  $LNG \
+    --langs  $LNGS \
     --decoder-langtok \
-    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trip.spm.en-liv
     
-cat round-trp.en-liv | fairseq-interactive $EVAL_DIR \
+cat round-trip.spm.en-liv | fairseq-interactive $EVAL_DIR \
     --batch-size 128 \
     --buffer-size 1024 \
     --path $MODEL_PATH \
     --fixed-dictionary $DICT_PATH \
+    --remove-bpe 'sentencepiece' \
     -s liv  -t en \
     --beam 5 \
     --task multilingual_semisupervised_translation \
     --lang-pairs $LNG_PAIRS \
-    --langs  $LNG \
+    --langs  $LNGS \
     --decoder-langtok \
-    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv-en
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trip.en-liv-en
 
 ```
 
