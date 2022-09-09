@@ -428,7 +428,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
@@ -497,7 +497,7 @@ cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SR
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
