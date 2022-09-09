@@ -541,5 +541,5 @@ cat round-trip.spm.en-liv | fairseq-interactive $EVAL_DIR \
 **Evaluate**
 
 ```shell
-cat round-trp.en-liv-en | sacrebleu $SOURCE_FILE
+cat round-trip.en-liv-en | sacrebleu $SOURCE_FILE
 ```
