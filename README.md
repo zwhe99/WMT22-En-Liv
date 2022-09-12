@@ -57,6 +57,76 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 
 
+## Cross-model word embedding alignment (CMEA)
+
+***Note:** You can use `--help` to see the full uage of each script.*
+
+```shell
+SRC_MODEL_NAME=liv4ever_mt
+TGT_MODEL_NAME=m2m100_1_2B
+CEMA_DIR=PTModels/M2M100-CMEA
+
+mkdir -p $CEMA_DIR
+
+# Obtain the overlapping vocabulary
+python3 tools/get-overlap.py \
+		--d1 PTModels/Liv4ever-MT/dict.src.txt \
+		--d2 PTModels/M2M100/model_dict.128k.txt \
+		> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
+
+# Extract word embeddings from models
+python3 tools/extract-word-emb.py \
+    --model PTModels/Liv4ever-MT/checkpoint_best.pt \
+    --dict  PTModels/Liv4ever-MT/dict.src.txt \
+    --name $SRC_MODEL_NAME \
+    --dest $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth
+
+python3 tools/extract-word-emb.py \
+    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
+    --dict  PTModels/M2M100/model_dict.128k.txt \
+    --name $TGT_MODEL_NAME \
+    --dest $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth
+
+# Cross-model word embedding alignment
+python3 tools/CMEA/supervised-inconsistent-dimensions.py \
+    --exp_path $CEMA_DIR \
+    --exp_name $SRC_MODEL_NAME-$TGT_MODEL_NAME-cema \
+    --exp_id main \
+    --src_lang $SRC_MODEL_NAME \
+    --tgt_lang $TGT_MODEL_NAME \
+    --src_emb_dim 512 \
+    --tgt_emb_dim 1024 \
+    --n_refinement 0 \
+    --cuda False \
+    --dico_train $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt \
+    --src_emb $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth \
+    --tgt_emb $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth \
+    --export pth
+
+# Get the final dictionary (Liv4ever-MT's dict + Lang tokens + madeupwords)
+cat PTModels/Liv4ever-MT/dict.trg.txt > $CEMA_DIR/merge_dict.txt
+
+echo "__liv__ 1" >> $CEMA_DIR/merge_dict.txt
+sed -n '128001,128100p' PTModels/M2M100/model_dict.128k.txt >> $CEMA_DIR/merge_dict.txt
+
+echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
+echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
+echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
+
+# Replace the original embedding with the new one
+python3 tools/CMEA/change-emb.py \
+    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
+    --emb1 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$SRC_MODEL_NAME.pth \
+    --emb2 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$TGT_MODEL_NAME.pth \
+    --dict $CEMA_DIR/merge_dict.txt \
+    --add-mask \
+    --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
+```
+
+
+
+
+
 ## Data
 
 #### Download
@@ -117,74 +187,6 @@ sh data/data/mono/create-data-bin.sh
 ```
 
 The binary files will be stored in `data/data-bin/auth` (authentic) and `data/data-bin/auth-syn` (authentic+synthetic). 
-
-
-
-## Cross-model word embedding alignment (CMEA)
-
-***Note:** You can use `--help` to see the full uage of each script.*
-
-```shell
-SRC_MODEL_NAME=liv4ever_mt
-TGT_MODEL_NAME=m2m100_1_2B
-CEMA_DIR=PTModels/M2M100-CMEA
-
-mkdir -p $CEMA_DIR
-
-# Obtain the overlapping vocabulary
-python3 tools/get-overlap.py \
-		--d1 PTModels/Liv4ever-MT/dict.src.txt \
-		--d2 PTModels/M2M100/model_dict.128k.txt \
-		> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
-
-# Extract word embeddings from models
-python3 tools/extract-word-emb.py \
-    --model PTModels/Liv4ever-MT/checkpoint_best.pt \
-    --dict  PTModels/Liv4ever-MT/dict.src.txt \
-    --name $SRC_MODEL_NAME \
-    --dest $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth
-
-python3 tools/extract-word-emb.py \
-    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
-    --dict  PTModels/M2M100/model_dict.128k.txt \
-    --name $TGT_MODEL_NAME \
-    --dest $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth
-
-# Cross-model word embedding alignment
-python3 tools/CMEA/supervised-inconsistent-dimensions.py \
-    --exp_path $CEMA_DIR \
-    --exp_name $SRC_MODEL_NAME-$TGT_MODEL_NAME-cema \
-    --exp_id main \
-    --src_lang $SRC_MODEL_NAME \
-    --tgt_lang $TGT_MODEL_NAME \
-    --src_emb_dim 512 \
-    --tgt_emb_dim 1024 \
-    --n_refinement 0 \
-    --cuda False \
-    --dico_train $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt \
-    --src_emb $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth \
-    --tgt_emb $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth \
-    --export pth
-
-# Get the final dictionary (Liv4ever-MT's dict + Lang tokens + madeupwords)
-cat PTModels/Liv4ever-MT/dict.trg.txt > $CEMA_DIR/merge_dict.txt
-echo "__liv__ 1" >> $CEMA_DIR/merge_dict.txt
-echo "__en__ 1"  >> $CEMA_DIR/merge_dict.txt
-echo "__et__ 1"  >> $CEMA_DIR/merge_dict.txt
-echo "__lv__ 1"  >> $CEMA_DIR/merge_dict.txt
-echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
-echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
-echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
-
-# Replace the original embedding with the new one
-python3 tools/CMEA/change-emb.py \
-    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
-    --emb1 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$SRC_MODEL_NAME.pth \
-    --emb2 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$TGT_MODEL_NAME.pth \
-    --dict $CEMA_DIR/merge_dict.txt \
-    --add-mask \
-    --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
-```
 
 
 
@@ -383,7 +385,7 @@ python3 tools/CMEA/change-emb.py \
      --sampling-method uniform \
      --encoder-langtok src \
      --decoder-langtok  \
-     --langs en,liv,et,lv,ensyn,livsyn,ensynet,livsynet,ensynlv,livsynlv \
+     --langs en,liv,et,lv \
      --lang-pairs liv-en,en-liv \
      --criterion label_smoothed_cross_entropy \
      --label-smoothing 0.2 \
@@ -406,7 +408,6 @@ python3 tools/CMEA/change-emb.py \
      --log-format simple \
      --log-interval 2 \
      --no-epoch-checkpoints  \
-     --train-subset test \
      --save-interval-updates 50 \
      --keep-interval-updates 2 \
      --disable-validation  \
@@ -427,7 +428,7 @@ python3 tools/CMEA/change-emb.py \
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
@@ -496,16 +497,17 @@ cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SR
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_best.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
 
 EVAL_DIR=data/eval
 SOURCE_FILE=$EVAL_DIR/wmttest2022.en-de.en
+SOURCE_SPM_FILE=$EVAL_DIR/wmttest2022.spm.en-de.en
 
 # generate
-cat $SOURCE_FILE | fairseq-interactive $EVAL_DIR \
+cat $SOURCE_SPM_FILE | fairseq-interactive $EVAL_DIR \
     --batch-size 128 \
     --buffer-size 1024 \
     --path $MODEL_PATH \
@@ -514,22 +516,23 @@ cat $SOURCE_FILE | fairseq-interactive $EVAL_DIR \
     --beam 5 \
     --task multilingual_semisupervised_translation \
     --lang-pairs $LNG_PAIRS \
-    --langs  $LNG \
+    --langs  $LNGS \
     --decoder-langtok \
-    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trip.spm.en-liv
     
-cat round-trp.en-liv | fairseq-interactive $EVAL_DIR \
+cat round-trip.spm.en-liv | fairseq-interactive $EVAL_DIR \
     --batch-size 128 \
     --buffer-size 1024 \
     --path $MODEL_PATH \
     --fixed-dictionary $DICT_PATH \
+    --remove-bpe 'sentencepiece' \
     -s liv  -t en \
     --beam 5 \
     --task multilingual_semisupervised_translation \
     --lang-pairs $LNG_PAIRS \
-    --langs  $LNG \
+    --langs  $LNGS \
     --decoder-langtok \
-    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trp.en-liv-en
+    --encoder-langtok src | grep -P "^H" | sort -V | cut -f 3- > round-trip.en-liv-en
 
 ```
 
@@ -538,5 +541,5 @@ cat round-trp.en-liv | fairseq-interactive $EVAL_DIR \
 **Evaluate**
 
 ```shell
-cat round-trp.en-liv-en | sacrebleu $SOURCE_FILE
+cat round-trip.en-liv-en | sacrebleu $SOURCE_FILE
 ```
