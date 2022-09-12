@@ -7,14 +7,6 @@ import os
 
 from src.utils import Dictionary
 
-def seed_everything(seed: int):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = True
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Given final dictionary, emb1, emb2 and the checkpoint file, change the embeddings of the checkpoint."
@@ -26,12 +18,10 @@ def parse_args():
     parser.add_argument('--dict', type=str, required=True, help="final dictionary path")
     parser.add_argument('--dest', type=str, required=True, help="path to save model")
     parser.add_argument('--add-mask', action="store_true", help="whether to add <mask> token")
-    parser.add_argument('--seed', type=int, default=42, help="random seed")
 
     return parser.parse_args()
 
 def main(args):
-    seed_everything(args.seed)
     model = torch.load(args.model)
 
     data1 = torch.load(args.emb1)
