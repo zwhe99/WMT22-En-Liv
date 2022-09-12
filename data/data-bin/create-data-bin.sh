@@ -47,6 +47,10 @@ do
     # eval
     cp -rs $EVAL_DIR/*.bin $DEST_DIR
     cp -rs $EVAL_DIR/*.idx $DEST_DIR
+    ln -sf $DEST_DIR/test.en-None.en.bin $DEST_DIR/test.en-liv.en.bin 
+    ln -sf $DEST_DIR/test.en-None.en.idx $DEST_DIR/test.en-liv.en.idx 
+    ln -sf $DEST_DIR/test.liv-None.liv.bin $DEST_DIR/test.liv-en.liv.bin 
+    ln -sf $DEST_DIR/test.liv-None.liv.idx $DEST_DIR/test.liv-en.liv.idx 
 
     # data for fine-tuning
     ln -sf $DEST_DIR/valid.en-liv.en.bin    $DEST_DIR/finetune.en-liv.en.bin
