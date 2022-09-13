@@ -444,41 +444,44 @@ DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
 
-SRC=en
-TGT=liv
+for lng_pair in en-liv liv-en
+do
+    SRC=${lng_pair%%-*}
+    TGT=${lng_pair##*-}
 
-# generate
-fairseq-generate data/data-bin/auth \
-    --batch-size 128 \
-    --path $MODEL_PATH \
-    --fixed-dictionary $DICT_PATH \
-    -s $SRC  -t $TGT \
-    --remove-bpe 'sentencepiece' \
-    --beam 5 \
-    --task multilingual_semisupervised_translation \
-    --lang-pairs $LNG_PAIRS \
-    --langs  $LNGS \
-    --decoder-langtok \
-    --encoder-langtok src \
-    --gen-subset test > wmttest2022.$SRC-$TGT.gen
-cat wmttest2022.$SRC-$TGT.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.hyp
+    # generate
+    fairseq-generate data/data-bin/auth \
+        --batch-size 128 \
+        --path $MODEL_PATH \
+        --fixed-dictionary $DICT_PATH \
+        -s $SRC  -t $TGT \
+        --remove-bpe 'sentencepiece' \
+        --beam 5 \
+        --task multilingual_semisupervised_translation \
+        --lang-pairs $LNG_PAIRS \
+        --langs  $LNGS \
+        --decoder-langtok \
+        --encoder-langtok src \
+        --gen-subset test > wmttest2022.$SRC-$TGT.gen
+    cat wmttest2022.$SRC-$TGT.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.hyp
 
-# generate (no-repeat)
-fairseq-generate data/data-bin/auth \
-    --batch-size 128 \
-    --path $MODEL_PATH \
-    --fixed-dictionary $DICT_PATH \
-    -s $SRC  -t $TGT \
-    --remove-bpe 'sentencepiece' \
-    --beam 5 \
-    --no-repeat-ngram-size	2 \
-    --task multilingual_semisupervised_translation \
-    --lang-pairs $LNG_PAIRS \
-    --langs  $LNGS \
-    --decoder-langtok \
-    --encoder-langtok src \
-    --gen-subset test > wmttest2022.$SRC-$TGT.no-repeat.gen
-cat wmttest2022.$SRC-$TGT.no-repeat.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.no-repeat.hyp
+    # generate (no-repeat)
+    fairseq-generate data/data-bin/auth \
+        --batch-size 128 \
+        --path $MODEL_PATH \
+        --fixed-dictionary $DICT_PATH \
+        -s $SRC  -t $TGT \
+        --remove-bpe 'sentencepiece' \
+        --beam 5 \
+        --no-repeat-ngram-size	2 \
+        --task multilingual_semisupervised_translation \
+        --lang-pairs $LNG_PAIRS \
+        --langs  $LNGS \
+        --decoder-langtok \
+        --encoder-langtok src \
+        --gen-subset test > wmttest2022.$SRC-$TGT.no-repeat.gen
+    cat wmttest2022.$SRC-$TGT.no-repeat.gen | grep -P "^H" | sort -V | cut -f 3-  > wmttest2022.$SRC-$TGT.no-repeat.hyp
+done
 ```
 
 
@@ -486,11 +489,25 @@ cat wmttest2022.$SRC-$TGT.no-repeat.gen | grep -P "^H" | sort -V | cut -f 3-  > 
 **Post-processing**
 
 ```shell
-python3 tools/post-process.py \
-    --src-file data/eval/wmttest2022.$SRC-$TGT.$SRC \
-    --hyp-file wmttest2022.$SRC-$TGT.hyp \
-    --no-repeat-hyp-file wmttest2022.$SRC-$TGT.no-repeat.hyp \
-    --lang $TGT > wmttest2022.$SRC-$TGT.post-processed.hyp
+for lng_pair in en-liv liv-en
+do
+    SRC=${lng_pair%%-*}
+    TGT=${lng_pair##*-}
+
+    if [[ $TGT == "liv" ]]
+    then
+        python3 tools/post-process.py \
+            --src-file data/eval/wmttest2022.$SRC-$TGT.$SRC \
+            --hyp-file wmttest2022.$SRC-$TGT.hyp \
+            --no-repeat-hyp-file wmttest2022.$SRC-$TGT.no-repeat.hyp \
+            --lang $TGT > wmttest2022.$SRC-$TGT.post-processed.hyp
+    else
+        python3 tools/post-process.py \
+            --src-file data/eval/wmttest2022.$SRC-$TGT.$SRC \
+            --hyp-file wmttest2022.$SRC-$TGT.hyp \
+            --lang $TGT > wmttest2022.$SRC-$TGT.post-processed.hyp
+    fi
+done
 ```
 
 
@@ -498,8 +515,41 @@ python3 tools/post-process.py \
 **Evaluate**
 
 ```shell
-cat wmttest2022.$SRC-$TGT.post-processed.hyp | sacrebleu data/references/generaltest2022.$SRC-$TGT.ref.A.$TGT
+cat wmttest2022.en-liv.post-processed.hyp | sacrebleu data/references/generaltest2022.en-liv.ref.A.liv
+cat wmttest2022.liv-en.post-processed.hyp | sacrebleu data/references/generaltest2022.liv-en.ref.A.en
 ```
+
+Outputs:
+
+```json
+{
+ "name": "BLEU",
+ "score": 17.0,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "49.7/22.3/11.6/6.6 (BP = 1.000 ratio = 1.010 hyp_len = 9342 ref_len = 9251)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}
+
+{
+ "name": "BLEU",
+ "score": 30.8,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "62.3/37.0/24.0/16.2 (BP = 1.000 ratio = 1.003 hyp_len = 10628 ref_len = 10599)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}
+```
+
+
 
 
 
@@ -553,4 +603,21 @@ cat round-trip.spm.en-liv | fairseq-interactive $EVAL_DIR \
 
 ```shell
 cat round-trip.en-liv-en | sacrebleu $SOURCE_FILE
+```
+
+Outputs:
+
+```json
+{
+ "name": "BLEU",
+ "score": 36.8,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "69.9/45.6/31.7/22.4 (BP = 0.950 ratio = 0.951 hyp_len = 337570 ref_len = 354789)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}
 ```
