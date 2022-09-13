@@ -1,6 +1,6 @@
 # WMT22-En-Liv
 
-This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). More details are available in our system description paper.
+This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). We provide all the models, data and scripts in this repository. More details are available in our system description paper.
 
 
 ## Overview
@@ -60,6 +60,8 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 ## Cross-model word embedding alignment (CMEA)
 
 * Processed model: [1.2B_last_checkpoint_cmea_emb.pt](https://drive.google.com/file/d/1ZDZuVtk4wuFlhXQigvvbDQCko5CKaiu9/view?usp=sharing)
+
+* Dictionary: [merge_dict.txt](https://drive.google.com/file/d/1-MMBtu9kYkJcRYAKiP65GLmVFCc1APyS/view?usp=sharing)
 
 * CMEA scripts
 
@@ -127,6 +129,7 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
       --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
   
   echo "The processed model is stored in $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt"
+  echo "The processed model is stored in $CEMA_DIR/merge_dict.txt"
   ```
 
 
@@ -282,7 +285,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
 
 * GPUs: 4 nodes x 8 A100-SXM4-40GB/node
 
-* Trained model: [m2m04-retrained.pt](https://drive.google.com/file/d/1gMFK_1BbE3OGTtMcXnTdxdfdLZ8Vm2bK/view?usp=sharing)
+* Trained model: [m2m04-retrained.pt](https://drive.google.com/file/d/1gMFK_1BbE3OGTtMcXnTdxdfdLZ8Vm2bK/view?usp=sharing) (slightly different from that in the paper)
 
 * Training script:
 
@@ -363,7 +366,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
 
 * GPUs: 1 nodes x 1 A100-SXM4-40GB/node
 
-* Trained model: [m2m04-retrained-finetuned.pt](https://drive.google.com/file/d/1srBY40-uQWFrjpFtCBwLpsJ4Ncfv9olJ/view?usp=sharing)
+* Trained model: [m2m04-retrained-finetuned.pt](https://drive.google.com/file/d/1srBY40-uQWFrjpFtCBwLpsJ4Ncfv9olJ/view?usp=sharing) (slightly different from that in the paper)
 
 * Training script:
 
@@ -515,6 +518,11 @@ done
 **Evaluate**
 
 ```shell
+echo "Before post-processing:"
+cat wmttest2022.en-liv.hyp | sacrebleu data/references/generaltest2022.en-liv.ref.A.liv
+cat wmttest2022.liv-en.hyp | sacrebleu data/references/generaltest2022.liv-en.ref.A.en
+
+echo "After post-processing:"
 cat wmttest2022.en-liv.post-processed.hyp | sacrebleu data/references/generaltest2022.en-liv.ref.A.liv
 cat wmttest2022.liv-en.post-processed.hyp | sacrebleu data/references/generaltest2022.liv-en.ref.A.en
 ```
@@ -522,6 +530,33 @@ cat wmttest2022.liv-en.post-processed.hyp | sacrebleu data/references/generaltes
 Outputs:
 
 ```json
+Before post-processing:
+{
+ "name": "BLEU",
+ "score": 16.1,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "47.0/21.0/10.9/6.2 (BP = 1.000 ratio = 1.050 hyp_len = 9713 ref_len = 9251)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}
+{
+ "name": "BLEU",
+ "score": 30.8,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "62.3/37.0/24.0/16.2 (BP = 1.000 ratio = 1.003 hyp_len = 10628 ref_len = 10599)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}
+
+After post-processing:
 {
  "name": "BLEU",
  "score": 17.0,
@@ -534,7 +569,6 @@ Outputs:
  "smooth": "exp",
  "version": "2.0.0"
 }
-
 {
  "name": "BLEU",
  "score": 30.8,
@@ -548,8 +582,6 @@ Outputs:
  "version": "2.0.0"
 }
 ```
-
-
 
 
 
