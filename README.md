@@ -190,7 +190,7 @@ sh data/para/process-para-data.sh
 sh data/mono/process-mono-data.sh
 
 # create data-bins
-sh data/data/mono/create-data-bin.sh
+sh data/data-bin/create-data-bin.sh
 ```
 
 The binary files will be stored in `data/data-bin/auth` (authentic) and `data/data-bin/auth-syn` (authentic+synthetic). 
