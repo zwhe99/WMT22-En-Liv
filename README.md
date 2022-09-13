@@ -59,71 +59,75 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
 
 ## Cross-model word embedding alignment (CMEA)
 
-***Note:** You can use `--help` to see the full uage of each script.*
+* Processed model: [1.2B_last_checkpoint_cmea_emb.pt](https://drive.google.com/file/d/1ZDZuVtk4wuFlhXQigvvbDQCko5CKaiu9/view?usp=sharing)
 
-```shell
-SRC_MODEL_NAME=liv4ever_mt
-TGT_MODEL_NAME=m2m100_1_2B
-CEMA_DIR=PTModels/M2M100-CMEA
+* CMEA scripts
 
-mkdir -p $CEMA_DIR
+  ***Note:** You can use `--help` to see the full uage of each script.*
 
-# Obtain the overlapping vocabulary
-python3 tools/get-overlap.py \
-		--d1 PTModels/Liv4ever-MT/dict.src.txt \
-		--d2 PTModels/M2M100/model_dict.128k.txt \
-		> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
-
-# Extract word embeddings from models
-python3 tools/extract-word-emb.py \
-    --model PTModels/Liv4ever-MT/checkpoint_best.pt \
-    --dict  PTModels/Liv4ever-MT/dict.src.txt \
-    --name $SRC_MODEL_NAME \
-    --dest $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth
-
-python3 tools/extract-word-emb.py \
-    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
-    --dict  PTModels/M2M100/model_dict.128k.txt \
-    --name $TGT_MODEL_NAME \
-    --dest $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth
-
-# Cross-model word embedding alignment
-python3 tools/CMEA/supervised-inconsistent-dimensions.py \
-    --exp_path $CEMA_DIR \
-    --exp_name $SRC_MODEL_NAME-$TGT_MODEL_NAME-cema \
-    --exp_id main \
-    --src_lang $SRC_MODEL_NAME \
-    --tgt_lang $TGT_MODEL_NAME \
-    --src_emb_dim 512 \
-    --tgt_emb_dim 1024 \
-    --n_refinement 0 \
-    --cuda False \
-    --dico_train $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt \
-    --src_emb $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth \
-    --tgt_emb $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth \
-    --export pth
-
-# Get the final dictionary (Liv4ever-MT's dict + Lang tokens + madeupwords)
-cat PTModels/Liv4ever-MT/dict.trg.txt > $CEMA_DIR/merge_dict.txt
-
-echo "__liv__ 1" >> $CEMA_DIR/merge_dict.txt
-sed -n '128001,128100p' PTModels/M2M100/model_dict.128k.txt >> $CEMA_DIR/merge_dict.txt
-
-echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
-echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
-echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
-
-# Replace the original embedding with the new one
-python3 tools/CMEA/change-emb.py \
-    --model PTModels/M2M100/1.2B_last_checkpoint.pt \
-    --emb1 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$SRC_MODEL_NAME.pth \
-    --emb2 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$TGT_MODEL_NAME.pth \
-    --dict $CEMA_DIR/merge_dict.txt \
-    --add-mask \
-    --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
-```
-
-
+  ```shell
+  SRC_MODEL_NAME=liv4ever_mt
+  TGT_MODEL_NAME=m2m100_1_2B
+  CEMA_DIR=PTModels/M2M100-CMEA
+  
+  mkdir -p $CEMA_DIR
+  
+  # Obtain the overlapping vocabulary
+  python3 tools/get-overlap.py \
+  		--d1 PTModels/Liv4ever-MT/dict.src.txt \
+  		--d2 PTModels/M2M100/model_dict.128k.txt \
+  		> $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt
+  
+  # Extract word embeddings from models
+  python3 tools/extract-word-emb.py \
+      --model PTModels/Liv4ever-MT/checkpoint_best.pt \
+      --dict  PTModels/Liv4ever-MT/dict.src.txt \
+      --name $SRC_MODEL_NAME \
+      --dest $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth
+  
+  python3 tools/extract-word-emb.py \
+      --model PTModels/M2M100/1.2B_last_checkpoint.pt \
+      --dict  PTModels/M2M100/model_dict.128k.txt \
+      --name $TGT_MODEL_NAME \
+      --dest $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth
+  
+  # Cross-model word embedding alignment
+  python3 tools/CMEA/supervised-inconsistent-dimensions.py \
+      --exp_path $CEMA_DIR \
+      --exp_name $SRC_MODEL_NAME-$TGT_MODEL_NAME-cema \
+      --exp_id main \
+      --src_lang $SRC_MODEL_NAME \
+      --tgt_lang $TGT_MODEL_NAME \
+      --src_emb_dim 512 \
+      --tgt_emb_dim 1024 \
+      --n_refinement 0 \
+      --cuda False \
+      --dico_train $CEMA_DIR/overlap-voc.$SRC_MODEL_NAME-$TGT_MODEL_NAME.txt \
+      --src_emb $CEMA_DIR/word-emb-$SRC_MODEL_NAME.pth \
+      --tgt_emb $CEMA_DIR/word-emb-$TGT_MODEL_NAME.pth \
+      --export pth
+  
+  # Get the final dictionary (Liv4ever-MT's dict + Lang tokens + madeupwords)
+  cat PTModels/Liv4ever-MT/dict.trg.txt > $CEMA_DIR/merge_dict.txt
+  
+  echo "__liv__ 1" >> $CEMA_DIR/merge_dict.txt
+  sed -n '128001,128100p' PTModels/M2M100/model_dict.128k.txt >> $CEMA_DIR/merge_dict.txt
+  
+  echo "madeupwordforbt 1" >> $CEMA_DIR/merge_dict.txt
+  echo "madeupword0000 0"  >> $CEMA_DIR/merge_dict.txt
+  echo "madeupword0001 0"  >> $CEMA_DIR/merge_dict.txt
+  
+  # Replace the original embedding with the new one
+  python3 tools/CMEA/change-emb.py \
+      --model PTModels/M2M100/1.2B_last_checkpoint.pt \
+      --emb1 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$SRC_MODEL_NAME.pth \
+      --emb2 $CEMA_DIR/$SRC_MODEL_NAME-$TGT_MODEL_NAME-cema/main/vectors-$TGT_MODEL_NAME.pth \
+      --dict $CEMA_DIR/merge_dict.txt \
+      --add-mask \
+      --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
+  
+  echo "The processed model is stored in $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt"
+  ```
 
 
 
@@ -196,7 +200,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
 
 * GPUs: 4 nodes x 8 A100-SXM4-40GB/node
 
-* Trained model (coming soon)
+* Trained model: [m2m04.pt](https://drive.google.com/file/d/1U0eYttJEzhoAcLyPUSpo2Ol-YcOpI_l9/view?usp=sharing)
 
 * Training script:
 
@@ -268,15 +272,17 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
      --save-dir $EXP_NAME/ckpts \
      --distributed-no-spawn  \
      --tensorboard-logdir $EXP_NAME/tensorboard
+  
+  mv $EXP_NAME/ckpts/checkpoint_best.pt $EXP_NAME/ckpts/m2m04.pt
   ```
-
+  
   
 
 **Combine data and retrain**
 
 * GPUs: 4 nodes x 8 A100-SXM4-40GB/node
 
-* Trained model (coming soon)
+* Trained model: [m2m04-retrained.pt](https://drive.google.com/file/d/1gMFK_1BbE3OGTtMcXnTdxdfdLZ8Vm2bK/view?usp=sharing)
 
 * Training script:
 
@@ -346,15 +352,18 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
      --save-dir $EXP_NAME/ckpts \
      --distributed-no-spawn  \
      --tensorboard-logdir $EXP_NAME/tensorboard
+  
+  mv $EXP_NAME/ckpts/checkpoint_best.pt $EXP_NAME/ckpts/m2m04-retrained.pt
   ```
 
   
+
 
 **Fintuning**
 
 * GPUs: 1 nodes x 1 A100-SXM4-40GB/node
 
-* Trained model (coming soon)
+* Trained model: [m2m04-retrained-finetuned.pt](https://drive.google.com/file/d/1srBY40-uQWFrjpFtCBwLpsJ4Ncfv9olJ/view?usp=sharing)
 
 * Training script:
 
@@ -364,7 +373,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
   
   fairseq-train data/data-bin/auth-syn \
      --train-subset finetune \
-     --finetune-from-model ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn/ckpts/checkpoint_best.pt \
+     --finetune-from-model ptm.mm100-1.2b-cema+task.mt+lang.enlvetli+samp.concat+data.auth-syn/ckpts/m2m04-retrained.pt \
      --num-workers 0 \
      --encoder-normalize-before  \
      --decoder-normalize-before  \
@@ -417,6 +426,8 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
      --save-dir $EXP_NAME/ckpts \
      --distributed-no-spawn  \
      --tensorboard-logdir $EXP_NAME/tensorboard
+  
+  mv $EXP_NAME/ckpts/checkpoint_last.pt $EXP_NAME/ckpts/m2m04-retrained-finetuned.pt
   ```
 
 
@@ -428,7 +439,7 @@ The binary files will be stored in `data/data-bin/auth` (authentic) and `data/da
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/m2m04-retrained-finetuned.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
@@ -479,7 +490,7 @@ python3 tools/post-process.py \
     --src-file data/eval/wmttest2022.$SRC-$TGT.$SRC \
     --hyp-file wmttest2022.$SRC-$TGT.hyp \
     --no-repeat-hyp-file wmttest2022.$SRC-$TGT.no-repeat.hyp \
-    --lang $TGT > wmttest2022.$SRC-$TGT.pa.hyp
+    --lang $TGT > wmttest2022.$SRC-$TGT.post-processed.hyp
 ```
 
 
@@ -487,7 +498,7 @@ python3 tools/post-process.py \
 **Evaluate**
 
 ```shell
-cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SRC-$TGT.ref.A.$TGT
+cat wmttest2022.$SRC-$TGT.post-processed.hyp | sacrebleu data/references/generaltest2022.$SRC-$TGT.ref.A.$TGT
 ```
 
 
@@ -497,7 +508,7 @@ cat wmttest2022.$SRC-$TGT.pa.hyp | sacrebleu data/references/generaltest2022.$SR
 **Generate translations**
 
 ```shell
-MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/checkpoint_last.pt
+MODEL_PATH=ptm.retrained+task.mt-bt+lang.enliv+samp.uni+data.valid-and-mono/ckpts/m2m04-retrained-finetuned.pt
 DICT_PATH=PTModels/M2M100-CMEA/merge_dict.txt
 LNG_PAIRS=liv-en,en-liv
 LNGS=en,liv,et,lv
