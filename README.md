@@ -129,7 +129,7 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
       --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
   
   echo "The processed model is stored in $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt"
-  echo "The processed model is stored in $CEMA_DIR/merge_dict.txt"
+  echo "The processed dictionary is stored in $CEMA_DIR/merge_dict.txt"
   ```
 
 
