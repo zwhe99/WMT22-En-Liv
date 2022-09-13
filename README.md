@@ -1,6 +1,6 @@
 # WMT22-En-Liv
 
-This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). We provide all the [models](https://drive.google.com/drive/folders/1o5Ux-mGOARivmqlCube7w0vRjeDjsMBr?usp=sharing), [data](https://drive.google.com/drive/folders/164iYBFG6-A-2YBRYC9sppfarehRez-Bi?usp=sharing) and scripts in this repository. More details are available in our system description paper.
+This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). We provide all the [models](https://drive.google.com/drive/folders/1o5Ux-mGOARivmqlCube7w0vRjeDjsMBr?usp=sharing), [data](https://drive.google.com/drive/folders/164iYBFG6-A-2YBRYC9sppfarehRez-Bi?usp=sharing), code and scripts in this repository. More details are available in our system description paper.
 
 
 ## Overview
