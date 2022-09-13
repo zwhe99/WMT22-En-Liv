@@ -1,6 +1,6 @@
 # WMT22-En-Liv
 
-This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). We provide all the [models](https://drive.google.com/drive/folders/1o5Ux-mGOARivmqlCube7w0vRjeDjsMBr?usp=sharing), [data](https://drive.google.com/drive/folders/164iYBFG6-A-2YBRYC9sppfarehRez-Bi?usp=sharing) and scripts in this repository. More details are available in our system description paper.
+This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL-SJTU) 's En-Liv submissions for the [Sixth Conference on Machine Translation (WMT22)](http://www.statmt.org/wmt22/). We provide all the [models](https://drive.google.com/drive/folders/1o5Ux-mGOARivmqlCube7w0vRjeDjsMBr?usp=sharing), [data](https://drive.google.com/drive/folders/164iYBFG6-A-2YBRYC9sppfarehRez-Bi?usp=sharing), code and scripts in this repository. More details are available in our system description paper.
 
 
 ## Overview
@@ -129,7 +129,7 @@ git clone https://huggingface.co/tartuNLP/liv4ever-mt PTModels/Liv4ever-MT
       --dest $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt
   
   echo "The processed model is stored in $CEMA_DIR/1.2B_last_checkpoint_cmea_emb.pt"
-  echo "The processed model is stored in $CEMA_DIR/merge_dict.txt"
+  echo "The processed dictionary is stored in $CEMA_DIR/merge_dict.txt"
   ```
 
 
@@ -190,7 +190,7 @@ sh data/para/process-para-data.sh
 sh data/mono/process-mono-data.sh
 
 # create data-bins
-sh data/data/mono/create-data-bin.sh
+sh data/data-bin/create-data-bin.sh
 ```
 
 The binary files will be stored in `data/data-bin/auth` (authentic) and `data/data-bin/auth-syn` (authentic+synthetic). 
