@@ -2,7 +2,7 @@
 
 We found that Liv4ever-MT has been underestimated due to Unicode inconsistency problem. We detailed this problem in our system description paper. Here we provide the scripts to reproduce the experiments. 
 
-By the way, it is easy to normalize Unicode with python ([norm_unicode.py](../tools/corpus-tools/norm_unicode.py)).
+By the way, it is easy to normalize Unicode with python ([norm_unicode.py](https://github.com/zwhe99/corpus-tools/blob/72d536439d3cedc113e65b35b540cadc9c17b3b4/norm_unicode.py)).
 
 
 
