@@ -6,7 +6,7 @@ This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL
 
 **News**
 
-* We won 1st place🥇for English=>Livonian and 2nd place🥈for Livonian<=English (Unconstrained System). [[Official Results]](https://statmt.org/wmt22/pdf/2022.wmt-1.1.pdf)
+* We won **1st** place🥇for English=>Livonian and **2nd** place🥈for Livonian<=English (Unconstrained System). [[Official Results]](https://statmt.org/wmt22/pdf/2022.wmt-1.1.pdf)
 
 
 ## Overview
