@@ -659,3 +659,18 @@ Outputs:
  "version": "2.0.0"
 }
 ```
+
+
+
+### Citation
+
+Please cite our system description [paper](https://arxiv.org/abs/2210.08742) if you found the resources in this repository useful.
+
+```
+@inproceedings{he2022wmt,
+  title={Tencent AI Lab-Shanghai Jiao Tong University Low-Resource Translation System for the WMT22 Translation Task},
+  author={He, Zhiwei and Wang, Xing and Tu, Zhaopeng and Shi, Shuming and Wang, Rui},
+  booktitle = {WMT},
+  year      = {2022}
+}
+```
