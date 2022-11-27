@@ -4,6 +4,10 @@ This is the implementaion of Tencent AI Lab - Shanghai Jiao Tong University (TAL
 
 **Note:** We find that Liv4ever-MT has been underestimated due to inconsistent Unicode normalization. Please see [liv4ever-mt-re-eval](liv4ever-mt-re-eval) to reproduce our results.
 
+**News**
+
+* We won 1st place🥇for English-Livonian and 2nd place🥈for Livonian-English (Unconstrained System). [[Official Results]](https://statmt.org/wmt22/pdf/2022.wmt-1.1.pdf)
+
 
 ## Overview
 
